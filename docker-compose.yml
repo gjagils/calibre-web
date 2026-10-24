@@ -11,7 +11,6 @@ services:
       - PUID=1026
       - PGID=100
       - TZ=Europe/Amsterdam
-      - DOCKER_MODS=linuxserver/mods:universal-calibre
       - WISHLIST_AUTOLOGIN_KEY=${WISHLIST_AUTOLOGIN_KEY:-}
     volumes:
       - /volume1/docker/calibre-web:/config

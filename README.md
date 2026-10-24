@@ -9,6 +9,7 @@ GitHub Actions → GHCR → Tailscale → Portainer (stack `calibre-web`) op de 
 |---|---|---|
 | `X-Forwarded-Proto`/`-Port` en Cloudflare Tunnel-detectie | `patches/reverseproxy.patch` | Juiste https-URL's achter boekjes.gerdjan.nl, ook voor Kobo-sync |
 | Wishlist-link in de navigatie | `static/wishlist.js` + script-tag in `layout.html` (`build/apply-customizations.sh`) | Doorklikken naar wishlist.gerdjan.nl |
+| Calibre-tools (`ebook-convert`) | `Dockerfile` (stage `calibre-tools`) | Ingebakken i.p.v. `DOCKER_MODS`, zodat een herstart niet elke keer ~100 pakketten installeert |
 | Autologin-key | `root/custom-cont-init.d/10-wishlist-key` | Key komt uit stack-env `WISHLIST_AUTOLOGIN_KEY`, niet uit repo of image |
 
 ## Stack-env (Portainer)
