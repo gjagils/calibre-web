@@ -1,0 +1,8 @@
+#!/bin/sh
+# Vult de autologin-key van de Wishlist in wishlist.js in, zodat die niet in repo of image staat.
+JS=/app/calibre-web/cps/static/wishlist.js
+if [ -n "${WISHLIST_AUTOLOGIN_KEY:-}" ]; then
+    sed -i "s|__WISHLIST_AUTOLOGIN_KEY__|${WISHLIST_AUTOLOGIN_KEY}|" "$JS"
+else
+    echo "**** WISHLIST_AUTOLOGIN_KEY niet gezet: Wishlist-link werkt niet ****"
+fi

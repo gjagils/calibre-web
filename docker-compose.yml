@@ -1,0 +1,19 @@
+version: "3.8"
+services:
+  calibre-web:
+    image: ghcr.io/gjagils/calibre-web:latest
+    container_name: calibre-web
+    restart: unless-stopped
+    network_mode: bridge
+    ports:
+      - "192.168.68.120:${HOST_PORT:-8086}:8083"
+    environment:
+      - PUID=1026
+      - PGID=100
+      - TZ=Europe/Amsterdam
+      - DOCKER_MODS=linuxserver/mods:universal-calibre
+      - WISHLIST_AUTOLOGIN_KEY=${WISHLIST_AUTOLOGIN_KEY:-}
+    volumes:
+      - /volume1/docker/calibre-web:/config
+      # BOOKS_MODE=ro tijdens de test naast calibre-web3, rw na de overstap
+      - /volume1/homes/gjagils/boeken/bibliotheek:/books:${BOOKS_MODE:-ro}

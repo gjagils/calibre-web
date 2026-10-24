@@ -1,0 +1,6 @@
+.git
+.github
+.env
+stack.env
+*.md
+.DS_Store

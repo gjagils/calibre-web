@@ -1,0 +1,70 @@
+--- a/cps/reverseproxy.py	2026-10-24 12:53:05
++++ b/cps/reverseproxy.py	2026-10-24 12:53:05
+@@ -36,6 +36,8 @@
+ #
+ # Inspired by http://flask.pocoo.org/snippets/35/
+ 
++import threading
++
+ from . import logger
+ from .reverse_proxy_auth import is_trusted_proxy_source, to_wsgi_header_key
+ 
+@@ -62,7 +64,7 @@
+ 
+     def __init__(self, application):
+         self.app = application
+-        self.proxied = False
++        self._local = threading.local()
+ 
+     def __call__(self, environ, start_response):
+         from . import config
+@@ -80,26 +82,44 @@
+                         log.warning("Discarded reverse proxy auth header '%s' from untrusted source IP-address: %s",
+                                     header_name, environ.get("REMOTE_ADDR"))
+ 
+-        self.proxied = False
++        proxied = False
+         self.script_name = "/"
+         script_name = environ.get('HTTP_X_SCRIPT_NAME', '')
+         if script_name:
+-            self.proxied = True
++            proxied = True
+             environ['SCRIPT_NAME'] = script_name
+             path_info = environ.get('PATH_INFO', '')
+             self.script_name = script_name
+             if path_info and path_info.startswith(script_name):
+                 environ['PATH_INFO'] = path_info[len(script_name):]
+ 
+-        scheme = environ.get('HTTP_X_SCHEME', '')
++        # Support both X-Forwarded-Proto (standard) and X-Scheme (legacy)
++        scheme = environ.get('HTTP_X_FORWARDED_PROTO', '') or environ.get('HTTP_X_SCHEME', '')
+         if scheme:
+             environ['wsgi.url_scheme'] = scheme
++            proxied = True
++
++        # Detect Cloudflare Tunnel: if Cf-Connecting-Ip is present, we're behind Cloudflare
++        is_cloudflare = bool(environ.get('HTTP_CF_CONNECTING_IP', ''))
++
+         servr = environ.get('HTTP_X_FORWARDED_HOST', '')
++        if not servr and is_cloudflare:
++            # Cloudflare Tunnel sets Host to the public hostname, use it as forwarded host
++            servr = environ.get('HTTP_HOST', '')
+         if servr:
+             environ['HTTP_HOST'] = servr
+-            self.proxied = True
++            proxied = True
++
++        port = environ.get('HTTP_X_FORWARDED_PORT', '')
++        if not port and is_cloudflare and scheme == 'https':
++            port = '443'
++        if port:
++            environ['SERVER_PORT'] = port
++            proxied = True
++
++        self._local.proxied = proxied
+         return self.app(environ, start_response)
+ 
+     @property
+     def is_proxied(self):
+-        return self.proxied
++        return getattr(self._local, 'proxied', False)
