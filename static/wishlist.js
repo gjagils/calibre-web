@@ -1,6 +1,7 @@
 (function() {
     var W = 'https://wishlist.gerdjan.nl';
     var K = '__WISHLIST_AUTOLOGIN_KEY__';  // wordt bij containerstart ingevuld uit WISHLIST_AUTOLOGIN_KEY
+    var RW = 'http://192.168.68.120:8088/sync';  // kobo-readwise: nu syncen
     function go() {
         var el = document.querySelector('a[href*="/me"]') || document.querySelector('.navbar-right .dropdown-toggle');
         if (!el) {
@@ -33,6 +34,14 @@
             var li = document.createElement('li');
             li.innerHTML = '<a href="' + url + '"><span class="glyphicon glyphicon-heart"></span> Wishlist</a>';
             nav.insertBefore(li, nav.firstChild);
+
+            // Readwise sync (kobo-readwise op de NAS): alleen voor gjagils, alleen thuis bereikbaar
+            if (u === 'gjagils') {
+                var rw = document.createElement('li');
+                rw.innerHTML = '<a href="' + RW + '" title="Leesstatus nu naar Readwise sturen">' +
+                    '<span class="glyphicon glyphicon-refresh"></span> Readwise sync</a>';
+                nav.insertBefore(rw, li.nextSibling);
+            }
         }
     }
     if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', go);
